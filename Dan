@@ -1,5 +1,12 @@
 import pygame
 from pygame.sprite import Sprite
+import random
+
+pygame.init()
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Pixel Clicker")
+clock = pygame.time.Clock()
 
 class Object(Sprite):
     def __init__(self, x, y, speed, color):
@@ -11,25 +18,144 @@ class Object(Sprite):
         self.rect.y = y
         self.speed = speed
         self.color = color
+        self.direction = random.choice([-1, 1])  # Случайное направление движения
 
     def reset(self, surface):
         surface.blit(self.image, self.rect)
 
 class Fire(Object):
-    def __init__(self, x, y, speed, color=(255, 0, 0)): 
+    def __init__(self, x, y, speed=2, color=(255, 0, 0)): 
         super().__init__(x, y, speed, color)
     
     def update(self):
-        self.rect.x += self.speed
+        self.rect.x += self.speed * self.direction
+        self.rect.y += self.speed * self.direction
+
+        if self.rect.right > WIDTH or self.rect.left < 0:
+            self.direction *= -1
+            self.rect.x = max(0, min(self.rect.x, WIDTH - self.rect.width))
+        if self.rect.bottom > HEIGHT or self.rect.top < 0:
+            self.direction *= -1
+            self.rect.y = max(0, min(self.rect.y, HEIGHT - self.rect.height))
 
 class Water(Object):
-    def __init__(self, x, y, speed, color=(0, 0, 255)):  
+    def __init__(self, x, y, speed=1, color=(0, 0, 255)):  
         super().__init__(x, y, speed, color)
+    
+    def update(self):
+
+        self.rect.y += self.speed
+        
+
+        if self.rect.bottom > HEIGHT:
+            self.rect.y = HEIGHT - self.rect.height
+            self.speed *= -1
+        if self.rect.top < 0:
+            self.rect.y = 0
+            self.speed *= -1
 
 class Grass(Object):
     def __init__(self, x, y, speed=0, color=(0, 255, 0)): 
         super().__init__(x, y, speed, color)
 
 class Food(Object):
-    def __init__(self, x, y, speed=0, color=(255, 255, 0)): 
+    def __init__(self, x, y, speed=0.5, color=(255, 255, 0)): 
         super().__init__(x, y, speed, color)
+    
+    def update(self):
+
+        self.rect.x += self.speed * 2
+
+        if self.rect.left > WIDTH:
+            self.rect.right = 0
+        if self.rect.right < 0:
+            self.rect.left = WIDTH
+
+all_sprites = pygame.sprite.Group()
+fire_group = pygame.sprite.Group()
+water_group = pygame.sprite.Group()
+grass_group = pygame.sprite.Group()
+food_group = pygame.sprite.Group()
+
+
+def create_object(pos, obj_type):
+    x, y = pos
+    x -= 25
+    y -= 25
+    
+    if obj_type == "fire":
+        new_obj = Fire(x, y)
+        fire_group.add(new_obj)
+    elif obj_type == "water":
+        new_obj = Water(x, y)
+        water_group.add(new_obj)
+    elif obj_type == "grass":
+        new_obj = Grass(x, y)
+        grass_group.add(new_obj)
+    elif obj_type == "food":
+        new_obj = Food(x, y)
+        food_group.add(new_obj)
+    
+    all_sprites.add(new_obj)
+
+
+current_type = "fire"
+font = pygame.font.SysFont(None, 36)
+
+running = True
+while running:
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        
+
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1: 
+                create_object(event.pos, current_type)
+            elif event.button == 3:  
+
+                for sprite in all_sprites:
+                    if sprite.rect.collidepoint(event.pos):
+                        sprite.kill()
+        
+
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_1:
+                current_type = "fire"
+            elif event.key == pygame.K_2:
+                current_type = "water"
+            elif event.key == pygame.K_3:
+                current_type = "grass"
+            elif event.key == pygame.K_4:
+                current_type = "food"
+            elif event.key == pygame.K_c:
+
+                all_sprites.empty()
+                fire_group.empty()
+                water_group.empty()
+                grass_group.empty()
+                food_group.empty()
+    
+    all_sprites.update()
+    
+
+    screen.fill((0, 0, 0)) 
+    
+
+    all_sprites.draw(screen)
+    
+
+    type_text = font.render(f"Current: {current_type.capitalize()}", True, (255, 255, 255))
+    help_text = font.render("1:Fire 2:Water 3:Grass 4:Food C:Clear", True, (200, 200, 200))
+    count_text = font.render(f"Objects: {len(all_sprites)}", True, (255, 255, 255))
+    
+    screen.blit(type_text, (10, 10))
+    screen.blit(help_text, (10, 50))
+    screen.blit(count_text, (10, 90))
+    pygame.draw.circle(screen, (255, 255, 255), pygame.mouse.get_pos(), 5, 1)
+    
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
