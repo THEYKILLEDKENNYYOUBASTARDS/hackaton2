@@ -5,7 +5,7 @@ import random
 pygame.init()
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Pixel Clicker")
+pygame.display.set_caption("Щ")
 clock = pygame.time.Clock()
 
 class Object(Sprite):
@@ -18,7 +18,7 @@ class Object(Sprite):
         self.rect.y = y
         self.speed = speed
         self.color = color
-        self.direction = random.choice([-1, 1])  # Случайное направление движения
+        self.direction = random.choice([-1, 1])
 
     def reset(self, surface):
         surface.blit(self.image, self.rect)
