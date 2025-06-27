@@ -13,6 +13,7 @@ GREEN = (0, 255, 0)     # Ножницы (побеждают Бумагу)
 BLUE = (0, 0, 255)      # Бумага (побеждает Камень)
 YELLOW = (255, 255, 0)  # Еда (может быть съедена всеми)
 GRAY = (200, 200, 200)  # Сетка
+ORANGE = (255, 165, 0)  # Ядерка
 
 # Параметры поля
 GRID_SIZE = 48
@@ -170,7 +171,7 @@ RULES = {
     'paper': 'rock'        # Бумага побеждает Камень
 }
 
-# Генерация случайных животных (по 5 каждого типа)
+# Генерация случайных животных
 for _ in range(1):
     x, y = random.randint(0, GRID_SIZE-1), random.randint(0, GRID_SIZE-1)
     animals.append(Rock(x, y))
@@ -188,17 +189,28 @@ for _ in range(20):
     x, y = random.randint(0, GRID_SIZE-1), random.randint(0, GRID_SIZE-1)
     foods.append(Food(x, y))
 
-# Основной цикл
-running = True
-clock = pygame.time.Clock()
-
 # Кнопки для панели управления
 buttons = [
     (pygame.Rect(GAME_WIDTH + 10, 245, 50, 50), RED, "Добавить камень"),
     (pygame.Rect(GAME_WIDTH + 10, 305, 50, 50), GREEN, "Добавить ножницы"),
     (pygame.Rect(GAME_WIDTH + 10, 365, 50, 50), BLUE, "Добавить бумагу"),
-    (pygame.Rect(GAME_WIDTH + 10, 425, 50, 50), YELLOW, "Добавить еду")
+    (pygame.Rect(GAME_WIDTH + 10, 425, 50, 50), YELLOW, "Добавить еду"),
+    (pygame.Rect(GAME_WIDTH + 10, 485, 50, 50), ORANGE, "ЯДЕРКА!")
 ]
+
+# Увеличиваем высоту окна для кнопки
+HEIGHT = max(HEIGHT, 550)
+SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
+
+def nuclear_blast():
+    """Очищает всё поле"""
+    global animals, foods
+    animals = []
+    foods = []
+
+# Основной цикл
+running = True
+clock = pygame.time.Clock()
 
 while running:
     for event in pygame.event.get():
@@ -211,21 +223,24 @@ while running:
             # Проверяем нажатие кнопок
             for i, (rect, _, _) in enumerate(buttons):
                 if rect.collidepoint(mouse_pos):
-                    # Находим пустую клетку
-                    occupied_cells = {(a.x, a.y) for a in animals} | {(f.x, f.y) for f in foods}
-                    empty_cells = [(x, y) for x in range(GRID_SIZE) for y in range(GRID_SIZE)
-                                 if (x, y) not in occupied_cells]
-                    
-                    if empty_cells:
-                        x, y = random.choice(empty_cells)
-                        if i == 0:  # Камень
-                            animals.append(Rock(x, y))
-                        elif i == 1:  # Ножницы
-                            animals.append(Scissors(x, y))
-                        elif i == 2:  # Бумага
-                            animals.append(Paper(x, y))
-                        elif i == 3:  # Еда
-                            foods.append(Food(x, y))
+                    if i == 4:  # Ядерка
+                        nuclear_blast()
+                    else:
+                        # Находим пустую клетку
+                        occupied_cells = {(a.x, a.y) for a in animals} | {(f.x, f.y) for f in foods}
+                        empty_cells = [(x, y) for x in range(GRID_SIZE) for y in range(GRID_SIZE)
+                                     if (x, y) not in occupied_cells]
+                        
+                        if empty_cells:
+                            x, y = random.choice(empty_cells)
+                            if i == 0:  # Камень
+                                animals.append(Rock(x, y))
+                            elif i == 1:  # Ножницы
+                                animals.append(Scissors(x, y))
+                            elif i == 2:  # Бумага
+                                animals.append(Paper(x, y))
+                            elif i == 3:  # Еда
+                                foods.append(Food(x, y))
     
     # Получаем список занятых клеток
     occupied_cells = {(a.x, a.y) for a in animals}
@@ -349,10 +364,13 @@ while running:
     button_labels = []
     for i, (rect, color, text) in enumerate(buttons):
         pygame.draw.rect(SCREEN, color, rect)
-        label_pos = (GAME_WIDTH + 64, 250 + i * 64)
+        label_pos = (GAME_WIDTH + 64, 250 + i * 60)
         button_labels.append((text, *label_pos))
     
     for text, x, y in button_labels:
+        # Для кнопки "ЯДЕРКА!" используем меньший шрифт
+        font_size = 18 if text == "ЯДЕРКА!" else 20
+        button_font = pygame.font.Font(None, font_size)
         surface = button_font.render(text, True, BLACK)
         SCREEN.blit(surface, (x, y))
     
