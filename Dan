@@ -1,1 +1,35 @@
+import pygame
+from pygame.sprite import Sprite
 
+class Object(Sprite):
+    def __init__(self, x, y, speed, color):
+        super().__init__()
+        self.image = pygame.Surface((50, 50))
+        self.image.fill(color)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.speed = speed
+        self.color = color
+
+    def reset(self, surface):
+        surface.blit(self.image, self.rect)
+
+class Fire(Object):
+    def __init__(self, x, y, speed, color=(255, 0, 0)): 
+        super().__init__(x, y, speed, color)
+    
+    def update(self):
+        self.rect.x += self.speed
+
+class Water(Object):
+    def __init__(self, x, y, speed, color=(0, 0, 255)):  
+        super().__init__(x, y, speed, color)
+
+class Grass(Object):
+    def __init__(self, x, y, speed=0, color=(0, 255, 0)): 
+        super().__init__(x, y, speed, color)
+
+class Food(Object):
+    def __init__(self, x, y, speed=0, color=(255, 255, 0)): 
+        super().__init__(x, y, speed, color)
