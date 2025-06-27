@@ -20,16 +20,16 @@ third = 0
 
 running = True
 while running:
-    window.fill(BLACK)
-    pygame.draw.rect(window, WHITE, (720, 0, 180, 720))
+    window.fill(WHITE)
+    pygame.draw.line(window, BLACK, (725, 0), (725, 720), 5)
 
     # 1 животина, 2 животина, 3 животина
     font = pygame.font.Font(None, 30)
 
     texts = [
-        ("1 животина:", 730, 10),
-        ("2 животина:", 730, 70),
-        ("3 животина:", 730, 130)
+        ("1 животина:", 735, 10),
+        ("2 животина:", 735, 70),
+        ("3 животина:", 735, 130)
     ]
 
     for text, x, y in texts:
@@ -40,9 +40,9 @@ while running:
     count_font = pygame.font.Font(None, 50)
 
     count_texts = [
-        (str(first), 750, 35),
-        (str(second), 750, 95),
-        (str(third), 750, 155)
+        (str(first), 755, 35),
+        (str(second), 755, 95),
+        (str(third), 755, 155)
     ]
 
     for text, x, y in count_texts:
@@ -50,10 +50,10 @@ while running:
         window.blit(surface, (x, y))
 
     # Кнопки
-    button_1 = pygame.Rect(730, 220, 50, 50)
-    button_2 = pygame.Rect(730, 320, 50, 50)
-    button_3 = pygame.Rect(730, 420, 50, 50)
-    button_4 = pygame.Rect(730, 520, 50, 50)
+    button_1 = pygame.Rect(735, 220, 50, 50)
+    button_2 = pygame.Rect(735, 320, 50, 50)
+    button_3 = pygame.Rect(735, 420, 50, 50)
+    button_4 = pygame.Rect(735, 520, 50, 50)
 
     buttons = [
          (button_1, RED),
@@ -69,10 +69,10 @@ while running:
     buttons_font = pygame.font.Font(None, 28)
 
     buttons_text = [
-         ("Кнопка 1", 785, 235),
-         ("Кнопка 2", 785, 335),
-         ("Кнопка 3", 785, 435),
-         ("Кнопка 4", 785, 535)
+         ("Кнопка 1", 790, 235),
+         ("Кнопка 2", 790, 335),
+         ("Кнопка 3", 790, 435),
+         ("Кнопка 4", 790, 535)
     ]
 
     for text, x, y in buttons_text:
