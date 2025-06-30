@@ -1,7 +1,7 @@
 # Экосистема Пикселей
 
 
-![Игра](https://github.com/THEYKILLEDKENNYYOUBASTARDS/hackaton2/blob/main/%D0%98%D0%B3%D1%80%D0%B0.png?raw=true)
+![Игра](https://github.com/THEYKILLEDKENNYYOUBASTARDS/hackaton2/blob/main/Game.png?raw=true)
 
 
 # Описание
