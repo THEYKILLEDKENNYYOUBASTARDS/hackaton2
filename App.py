@@ -14,6 +14,7 @@ BLUE = (0, 0, 255)      # Бумага (побеждает Камень)
 YELLOW = (255, 255, 0)  # Еда (может быть съедена всеми)
 GRAY = (200, 200, 200)  # Сетка
 ORANGE = (255, 165, 0)  # Ядерка
+PURPLE = (160, 90, 180)
 
 # Параметры поля
 GRID_SIZE = 48
@@ -25,6 +26,9 @@ WIDTH = GAME_WIDTH + PANEL_WIDTH
 HEIGHT = GAME_HEIGHT
 SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Экосистема 'Камень-Ножницы-Бумага'")
+
+food_chance = 0
+max_food = 30
 
 class Object(Sprite):
     def __init__(self, x, y, color):
@@ -212,7 +216,21 @@ def nuclear_blast():
 running = True
 clock = pygame.time.Clock()
 
+# Создаем кнопки для изменения вероятности появления еды
+minus_button = pygame.Rect(20, 510, 30, 30)  # Кнопка "-"
+plus_button = pygame.Rect(180, 510, 30, 30)  # Кнопка "+"
+
+max_food_minus_button = pygame.Rect(305, 510, 30, 30)  # Кнопка "-"
+max_food_plus_button = pygame.Rect(420, 510, 30, 30)  # Кнопка "+"
+
 while running:
+    # Получаем позицию мыши для подсветки кнопок
+    mouse_pos = pygame.mouse.get_pos()
+    minus_hovered = minus_button.collidepoint(mouse_pos)
+    plus_hovered = plus_button.collidepoint(mouse_pos)
+    max_food_minus_hovered = max_food_minus_button.collidepoint(mouse_pos)
+    max_food_plus_hovered = max_food_plus_button.collidepoint(mouse_pos)
+    
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -220,7 +238,18 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             mouse_pos = pygame.mouse.get_pos()
             
-            # Проверяем нажатие кнопок
+            # Проверяем нажатие кнопок управления вероятностью еды
+            if minus_button.collidepoint(mouse_pos):
+                food_chance = max(0, round(food_chance - 0.1, 2))  # Уменьшаем вероятность, но не ниже 0
+            elif plus_button.collidepoint(mouse_pos):
+                food_chance = min(1, round(food_chance + 0.1, 2))  # Увеличиваем вероятность, но не выше 1
+            
+            if max_food_minus_button.collidepoint(mouse_pos):
+                max_food = max(0, round(max_food - 5, 2))
+            elif max_food_plus_button.collidepoint(mouse_pos):
+                max_food = min(100, round(max_food + 5, 2))
+
+            # Проверяем нажатие кнопок панели управления
             for i, (rect, _, _) in enumerate(buttons):
                 if rect.collidepoint(mouse_pos):
                     if i == 4:  # Ядерка
@@ -241,6 +270,7 @@ while running:
                                 animals.append(Paper(x, y))
                             elif i == 3:  # Еда
                                 foods.append(Food(x, y))
+
     
     # Получаем список занятых клеток
     occupied_cells = {(a.x, a.y) for a in animals}
@@ -291,7 +321,7 @@ while running:
                                 break
     
     # Периодическое добавление новой еды
-    if random.random() < 0.50 and len(foods) < 30:
+    if random.random() < food_chance and len(foods) < max_food:
         empty_cells = [(x, y) for x in range(GRID_SIZE) for y in range(GRID_SIZE)
                     if (x, y) not in occupied_cells and 
                     not any(f.x == x and f.y == y for f in foods)]
@@ -330,6 +360,7 @@ while running:
     font = pygame.font.Font(None, 30)
     count_font = pygame.font.Font(None, 50)
     button_font = pygame.font.Font(None, 20)
+    small_font = pygame.font.Font(None, 24)  # Добавлен шрифт для текста внизу
     
     # Статистика
     rock_count = sum(1 for a in animals if a.type == 'rock')
@@ -374,6 +405,49 @@ while running:
         surface = button_font.render(text, True, BLACK)
         SCREEN.blit(surface, (x, y))
     
+    # Добавляем текст "Вероятность появления еды" внизу игрового поля
+    food_chance_text = small_font.render("Вероятность появления еды:", True, BLACK)
+    SCREEN.blit(food_chance_text, (10, 490))
+
+    # Отображаем текущее значение вероятности (с округлением до 2 знаков)
+    food_chance_num = count_font.render(str(food_chance * 100) + "%", True, BLACK)
+    SCREEN.blit(food_chance_num, (60, 510))
+
+    # Рисуем кнопку "-" с подсветкой при наведении
+    minus_color = PURPLE if minus_hovered else BLACK
+    pygame.draw.circle(SCREEN, minus_color, (35, 525), 15)
+    food_chance_minus = count_font.render("-", True, WHITE)
+    SCREEN.blit(food_chance_minus, (30, 505))
+
+    # Рисуем кнопку "+" с подсветкой при наведении
+    plus_color = PURPLE if plus_hovered else BLACK
+    pygame.draw.circle(SCREEN, plus_color, (180, 525), 15)
+    food_chance_plus = count_font.render("+", True, WHITE)
+    SCREEN.blit(food_chance_plus, (170, 505))
+
+    # Добавляем текст "Макс. число еды" внизу игрового поля
+    max_food_text = small_font.render("Макс. число еды:", True, BLACK)
+    SCREEN.blit(max_food_text, (280, 490))
+
+    # Отображаем текущее значение
+    max_food_num = count_font.render(str(max_food), True, BLACK)
+    SCREEN.blit(max_food_num, (330, 510))
+
+    # Рисуем кнопку "-" с подсветкой при наведении
+    max_food_minus_color = PURPLE if max_food_minus_hovered else BLACK
+    pygame.draw.circle(SCREEN, max_food_minus_color, (305, 525), 15)
+    food_chance_minus = count_font.render("-", True, WHITE)
+    SCREEN.blit(food_chance_minus, (300, 505))
+
+    # Рисуем кнопку "+" с подсветкой при наведении
+    max_food_plus_color = PURPLE if max_food_plus_hovered else BLACK
+    pygame.draw.circle(SCREEN, max_food_plus_color, (420, 525), 15)
+    food_chance_plus = count_font.render("+", True, WHITE)
+    SCREEN.blit(food_chance_plus, (410, 505))
+
+    # Рисуем линию над текстом
+    pygame.draw.line(SCREEN, BLACK, (0, HEIGHT - 70), (GAME_WIDTH, HEIGHT - 70), 5)
+
     pygame.display.flip()
     clock.tick(60)
 
